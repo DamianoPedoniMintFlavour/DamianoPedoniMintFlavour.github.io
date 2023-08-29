@@ -1,0 +1,198 @@
+<html>
+    <head>
+        <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+        <style>
+            body {
+                background-color: black;
+                font-family: 'Roboto', sans-serif;
+            }
+            #top-right-container {
+                position: absolute;
+                right: 5vw;
+                top: 2vw;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                justify-content: flex-end;
+            }
+            #time-container {
+                color: white;
+            }
+            #time {
+                font-size: 20vw;
+            }
+            #day {
+                font-size: 5vw;
+                text-align: end;
+                margin-top: -2vw;
+            }
+            #face {
+                margin-top: 5vw;
+            }
+            #face-components-container {
+                width: 15vw;
+                height: 15vw;
+                position: relative;
+                perspective: 10vw;
+                transform-style: preserve-3d;
+            }
+            .face-component {
+                position: absolute;
+                top: 0;
+                left: 0;
+                transition: all 0.2s ease-in-out;
+            }
+            .face-component img {
+                width: 100%;
+                height: 100%;
+            }
+            .face-component.face-shadow {
+                opacity: 0.2;
+            }
+            #face-img {
+                transform: translateZ(1vw);
+            }
+            #nose-img {
+                transform: translateZ(2.5vw);
+            }
+            #eyes-img {
+                transform: translateZ(1.5vw);
+            }
+            #mouth-img {
+                transform: translateZ(2vw);
+            }
+        </style>
+    </head>
+    <body>
+        <div id="top-right-container">
+            <div id="time-container">
+                <div id="time"><span id="time_hours">--</span><span id="time_colon">:</span><span id="time_minutes">--</span></div>
+                <div id="day">-, - -</div>
+            </div>
+            <div id="face">
+                <div id="face-components-container">
+                    <div class="face-component face-shadow">
+                        <img src="assets/face.svg">
+                    </div>
+                    <div class="face-component face-shadow">
+                        <img src="assets/eyes.svg" class="face-eyes">
+                    </div>
+                    <div class="face-component face-shadow">
+                        <img src="assets/mouth.svg">
+                    </div>
+                    <div class="face-component face-shadow">
+                        <img src="assets/nose.svg">
+                    </div>
+        
+                    <div class="face-component" id="face-img">
+                        <img src="assets/face.svg">
+                    </div>
+                    <div class="face-component" id="eyes-img">
+                        <img src="assets/eyes.svg" class="face-eyes">
+                    </div>
+                    <div class="face-component" id="mouth-img">
+                        <img src="assets/mouth.svg">
+                    </div>
+                    <div class="face-component" id="nose-img">
+                        <img src="assets/nose.svg">
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <script>
+            var follow_mouse = false
+            var face = $("#face-components-container")
+            var days = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"]
+
+            $(document).on("mousemove", function(e){
+                if (!follow_mouse){
+                    return
+                }
+                var xRel = e.pageX - face.offset().left;
+                var yRel = e.pageY - face.offset().top;
+                var width = face.width();
+            
+                yAngle = -(0.5 - (xRel / width)) * 15; 
+                xAngle = (0.5 - (yRel / width)) * 15;
+
+                rotateFace(xAngle, yAngle)
+            })
+
+            function rotateFace(xAngle, yAngle){
+                face.css({
+                    "transform": "rotateX(" + xAngle + "deg) rotateY(" + yAngle + "deg)",
+                });
+            }
+
+            function randomIntFromInterval(min, max) {
+                return Math.floor(Math.random() * (max - min + 1) + min)
+            }
+
+            function blink(){
+                var eyes = $(".face-eyes")
+                eyes.attr("src", "assets/eyes_closed.svg")
+
+                setTimeout(function(){
+                    eyes.attr("src", "assets/eyes.svg")
+
+                    setTimeout(function(){
+                        blink()
+                    }, randomIntFromInterval(1, 3) * 1000)
+                }, 150)
+            }
+
+            function idle(angle){
+                
+                var s = Math.sin(angle) * 10
+                var c = Math.cos(angle) * 20
+
+                rotateFace(s, c)
+
+                setTimeout(function(){
+                    idle(angle + 0.01)
+                }, 10)
+            }
+
+            function updateTime(){
+                var time = new Date()
+                var hour = time.getHours()
+                var minutes = time.getMinutes()
+                hour = hour < 10 ? "0" + hour : hour
+                minutes = minutes < 10 ? "0" + minutes : minutes
+
+                $("#time_hours").text(hour)
+                $("#time_minutes").text(minutes)
+                
+                
+                if ($("#time_colon").css('visibility') == 'hidden'){
+                    $("#time_colon").css('visibility','visible');
+                }else{
+                    $("#time_colon").css('visibility','hidden');
+                }
+                    
+
+                var day = days[time.getDay()]
+                var day_number = time.getDate()
+                var month = time.toLocaleString('default', { month: 'long' });
+                month = month.charAt(0).toUpperCase() + month.slice(1);
+
+                $("#day").text(`${day}, ${day_number} ${month}`)
+
+                setTimeout(() => {
+                    updateTime()
+                }, 1000);
+            }
+
+
+            updateTime()
+            idle(0)
+            blink()
+        </script>
+    </body>
+    
+</html>
